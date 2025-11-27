@@ -18,7 +18,7 @@ const charLimitInfo = document.querySelector("#character-limit-info");
 
 function updateCharLimit() {
     const charLeft = characterLimit - textArea.value.length;
-    charLimitInfo.textContent = `You have ${charLeft} characters remaining`;
+    charLimitInfo.innerText = `You have ${charLeft} characters remaining`;
   }
 
 textArea.addEventListener("keyup", updateCharLimit);
