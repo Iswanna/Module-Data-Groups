@@ -1,20 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    <title>Alarm clock app</title>
-  </head>
-  <body>
-    <div class="centre">
-      <h1 id="timeRemaining">Time Remaining: 00:00</h1>
-      <label for="alarmSet">Set time to:</label>
-      <input id="alarmSet" type="number" />
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Alarm Clock App</title>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <h1 id="timeRemaining" aria-live="polite" aria-atomic="true">
+        Time Remaining: <span class="time-display">00:00</span>
+      </h1>
 
-      <button id="set" type="button">Set Alarm</button>
-      <button id="stop" type="button">Stop Alarm</button>
+      <div class="input-group">
+        <label for="alarmSet">Set time in seconds:</label>
+        <input 
+          id="alarmSet" 
+          type="number" 
+          min="1"
+          max="3600"
+          placeholder="Enter seconds"
+          aria-describedby="input-helper"
+        />
+        <p id="input-helper" class="helper-text">
+          Enter a number between 1 and 3600
+        </p>
+      </div>
+
+      <div class="button-group">
+        <button id="set" type="button" class="btn btn-primary">
+          <span class="btn-icon">⏰</span>
+          Set Alarm
+        </button>
+        <button id="stop" type="button" class="btn btn-secondary">
+          <span class="btn-icon">⏹</span>
+          Stop Alarm
+        </button>
+      </div>
+
+      <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
     </div>
-    <script src="alarmclock.js"></script>
-  </body>
+  </main>
+  <script src="alarmclock.js" defer></script>
+</body>
 </html>
