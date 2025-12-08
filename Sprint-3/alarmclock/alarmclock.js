@@ -1,80 +1,70 @@
-// Declare a global variable to store the countdown currently running
 let intervalId;
-const timesRemaining = "Time Remaining:";
+const audio = new Audio("alarmsound.mp3");
 
-// Helper function to format total seconds and update the UI
 function updateDisplay(totalSeconds) {
-  let timeRemainingMinutes = Math.floor(totalSeconds / 60)
-    .toString()
-    .padStart(2, "0");
-  let timeRemainingSeconds = (totalSeconds % 60).toString().padStart(2, "0");
+  const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
 
-  document.getElementById(
-    "timeRemaining"
-  ).textContent = `${timesRemaining} ${timeRemainingMinutes}:${timeRemainingSeconds}`;
+  const timeDisplay = document.querySelector(".time-display");
+  if (timeDisplay) {
+    timeDisplay.textContent = `${minutes}:${seconds}`;
+  }
+}
+
+function clearStatusMessage() {
+  const status = document.getElementById("status-message");
+  if (status) {
+    status.textContent = "";
+    status.className = "status-message";
+  }
+}
+
+function showStatusMessage(message, type) {
+  const status = document.getElementById("status-message");
+  if (!status) return;
+  status.textContent = message;
+  status.className = `status-message ${type}`;
+
+  if (type === "success") {
+    setTimeout(clearStatusMessage, 3000);
+  }
+}
+
+function resetAlarmState() {
+  const card = document.querySelector(".card");
+  if (card) card.classList.remove("alarm-triggered");
 }
 
 function setAlarm() {
-  if (intervalId) {
-    clearInterval(intervalId); // when the set alarm button is clicked, if there is a countdown running, clear it
-  }
-  // When I press the “Set Alarm” button:
-  // Read the number typed in the input field (in seconds)
-  // Store this value in a variable called totalSeconds
-  // Convert totalSeconds into minutes and seconds and save them inside timeRemainingMinutes and timeRemainingSeconds respectively
-  // Format timeRemainingMinutes and timeRemainingSeconds so they always have 2 digits (mm:ss)
-  // Display "Time Remaining: mm:ss" on the UI
-  // Start a repeating timer using setInterval that runs every 1 second:
-  // Decrease timeRemaining by 1
-  // Convert the new time into mm:ss
-  // Update the display
-  // If timeRemaining reaches 0:
-  // Stop the interval
-  // Display "00:00"
-  // Call playAlarm()
+  clearInterval(intervalId);
+  resetAlarmState();
+  clearStatusMessage();
 
-  let inputElement = document.getElementById("alarmSet"); // this is used to grab the input element so I can read whatever the user typed
-  let totalSeconds = Number(inputElement.value); //this converts the input from string to number
+  const input = document.getElementById("alarmSet");
+  let totalSeconds = Number(input.value);
 
-  // Validate input
-  if (totalSeconds <= 0 || isNaN(totalSeconds)) {
-    alert("Please enter a positive number!");
-    return;
-  }
+  if (!input.value) { showStatusMessage("⚠️ Please enter a number", "error"); input.focus(); return; }
+  if (isNaN(totalSeconds)) { showStatusMessage("⚠️ Please enter a valid number", "error"); input.focus(); return; }
+  if (totalSeconds <= 0) { showStatusMessage("⚠️ Please enter a number greater than 0", "error"); input.focus(); return; }
+  if (totalSeconds > 3600) { showStatusMessage("⚠️ Maximum time is 3600 seconds (1 hour)", "error"); input.focus(); return; }
 
-  document.getElementById("timeRemaining").style.backgroundColor = "";
-
+  showStatusMessage(`✅ Alarm set for ${totalSeconds} seconds`, "success");
   updateDisplay(totalSeconds);
-  // start the countdown
+
   intervalId = setInterval(() => {
-    // the code you write here will run every one second or 1000 milliseconds
-    totalSeconds = totalSeconds - 1;
+    totalSeconds -= 1;
     if (totalSeconds <= 0) {
       clearInterval(intervalId);
+      updateDisplay(0);
       playAlarm();
-      document.getElementById("timeRemaining").textContent =
-        `${timesRemaining} 00:00`;
-      document.getElementById("timeRemaining").style.backgroundColor = "blue";
-      document.getElementById("alarmSet").value = "";
+      const card = document.querySelector(".card");
+      if (card) card.classList.add("alarm-triggered");
+      showStatusMessage("⏰ Time's up! Alarm ringing!", "active");
+      input.value = "";
       return;
     }
-
     updateDisplay(totalSeconds);
   }, 1000);
-}
-
-// DO NOT EDIT BELOW HERE
-
-var audio = new Audio("alarmsound.mp3");
-
-function setup() {
-  document.getElementById("set").addEventListener("click", () => {
-    setAlarm();
-  });
-
-  document.getElementById("stop").addEventListener("click", () => {
-    pauseAlarm();
-  });
 }
 
 function playAlarm() {
@@ -83,6 +73,24 @@ function playAlarm() {
 
 function pauseAlarm() {
   audio.pause();
+  audio.currentTime = 0;
+}
+
+function setup() {
+  document.getElementById("set").addEventListener("click", setAlarm);
+  document.getElementById("stop").addEventListener("click", () => {
+    pauseAlarm();
+    clearInterval(intervalId);
+    intervalId = null;
+    updateDisplay(0);
+    resetAlarmState();
+    showStatusMessage("⏹ Alarm stopped", "success");
+    document.getElementById("alarmSet").value = "";
+  });
+
+  document.getElementById("alarmSet").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") setAlarm();
+  });
 }
 
 window.onload = setup;
